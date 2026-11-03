@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960">
+  <rect width="1200" height="960" fill="white" />
+  <style>text{font-family:Arial,sans-serif;fill:#17324d;font-size:18px}.title{font-size:30px;font-weight:bold}.small{font-size:15px}.wire{fill:none;stroke:#17324d;stroke-width:3}.a{stroke:#146ad6}.b{stroke:#009b91}</style>
+  <text x="40" y="48" class="title">Kabeltester – logische Schaltskizze</text>
+  <text x="40" y="80">Stand 08.10.2026 · GPIO-Nummern, keine physischen Stiftpositionen</text>
+  <rect x="390" y="120" width="420" height="530" rx="12" fill="#eef4fa" stroke="#17324d" stroke-width="3" />
+  <text x="450" y="154" style="font-size:24px;font-weight:bold">ESP32-S3 / Board</text>
+  <text x="42" y="130">Buchse A</text>
+  <text x="920" y="130">Buchse B</text>
+  <text x="44" y="660" class="small">A: je 1 kΩ in Serie</text>
+  <text x="844" y="660" class="small">B: interne Pull-downs</text>
+  <text x="52" y="196">A0</text>
+  <path d="M90 190 H185 M275 190 H390" class="wire a" />
+  <rect x="185" y="176" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="196">1 kΩ</text>
+  <text x="415" y="196">GPIO6</text>
+  <text x="693" y="196">GPIO42</text>
+  <path d="M810 190 H970" class="wire b" />
+  <text x="984" y="196">B0</text>
+  <text x="52" y="248">A1</text>
+  <path d="M90 242 H185 M275 242 H390" class="wire a" />
+  <rect x="185" y="228" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="248">1 kΩ</text>
+  <text x="415" y="248">GPIO16</text>
+  <text x="693" y="248">GPIO39</text>
+  <path d="M810 242 H970" class="wire b" />
+  <text x="984" y="248">B1</text>
+  <text x="52" y="300">A2</text>
+  <path d="M90 294 H185 M275 294 H390" class="wire a" />
+  <rect x="185" y="280" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="300">1 kΩ</text>
+  <text x="415" y="300">GPIO4</text>
+  <text x="693" y="300">GPIO1</text>
+  <path d="M810 294 H970" class="wire b" />
+  <text x="984" y="300">B2</text>
+  <text x="52" y="352">A3</text>
+  <path d="M90 346 H185 M275 346 H390" class="wire a" />
+  <rect x="185" y="332" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="352">1 kΩ</text>
+  <text x="415" y="352">GPIO7</text>
+  <text x="693" y="352">GPIO41</text>
+  <path d="M810 346 H970" class="wire b" />
+  <text x="984" y="352">B3</text>
+  <text x="52" y="404">A4</text>
+  <path d="M90 398 H185 M275 398 H390" class="wire a" />
+  <rect x="185" y="384" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="404">1 kΩ</text>
+  <text x="415" y="404">GPIO15</text>
+  <text x="693" y="404">GPIO40</text>
+  <path d="M810 398 H970" class="wire b" />
+  <text x="984" y="404">B4</text>
+  <text x="52" y="456">A5</text>
+  <path d="M90 450 H185 M275 450 H390" class="wire a" />
+  <rect x="185" y="436" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="456">1 kΩ</text>
+  <text x="415" y="456">GPIO5</text>
+  <text x="693" y="456">GPIO2</text>
+  <path d="M810 450 H970" class="wire b" />
+  <text x="984" y="456">B5</text>
+  <text x="52" y="508">A6</text>
+  <path d="M90 502 H185 M275 502 H390" class="wire a" />
+  <rect x="185" y="488" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="508">1 kΩ</text>
+  <text x="415" y="508">GPIO17</text>
+  <text x="693" y="508">GPIO47</text>
+  <path d="M810 502 H970" class="wire b" />
+  <text x="984" y="508">B6</text>
+  <text x="52" y="560">A7</text>
+  <path d="M90 554 H185 M275 554 H390" class="wire a" />
+  <rect x="185" y="540" width="90" height="28" fill="white" stroke="#146ad6" stroke-width="3" />
+  <text x="205" y="560">1 kΩ</text>
+  <text x="415" y="560">GPIO18</text>
+  <text x="693" y="560">GPIO21</text>
+  <path d="M810 554 H970" class="wire b" />
+  <text x="984" y="560">B7</text>
+  <text x="418" y="610" class="small">A: nur ein GPIO HIGH; übrige hochohmig</text>
+  <text x="418" y="634" class="small">B: Eingänge, Pull-down im Code aktiviert</text>
+  <path d="M490 650 V710 H420 M380 710 H330 V870" class="wire" />
+  <circle cx="420" cy="710" r="4" fill="#17324d" />
+  <circle cx="380" cy="710" r="4" fill="#17324d" />
+  <path d="M380 710 L415 688" class="wire" />
+  <text x="440" y="697">GPIO11</text>
+  <text x="290" y="747" class="small">Kippschalter</text>
+  <path d="M600 650 V720" class="wire" />
+  <rect x="588" y="720" width="24" height="55" class="wire" />
+  <text x="621" y="751" class="small">1 kΩ</text>
+  <path d="M600 775 V798" class="wire" />
+  <path d="M586 798 H614 L600 822 Z" fill="#3eae55" stroke="#17324d" stroke-width="2" />
+  <path d="M584 825 H616 M600 825 V870" class="wire" />
+  <text x="565" y="697">GPIO9</text>
+  <text x="535" y="852" class="small">grün</text>
+  <path d="M745 650 V720" class="wire" />
+  <rect x="733" y="720" width="24" height="55" class="wire" />
+  <text x="766" y="751" class="small">1 kΩ</text>
+  <path d="M745 775 V798" class="wire" />
+  <path d="M731 798 H759 L745 822 Z" fill="#e44d4d" stroke="#17324d" stroke-width="2" />
+  <path d="M729 825 H761 M745 825 V870" class="wire" />
+  <text x="703" y="697">GPIO10</text>
+  <text x="764" y="815" class="small">Anode oben</text>
+  <text x="764" y="840" class="small">Kathode unten (GND)</text>
+  <path d="M330 870 H840 M840 870 V645 M823 886 H857 M829 894 H851 M836 902 H844" class="wire" />
+  <text x="859" y="876">GND am Board</text>
+  <text x="40" y="915" class="small">Versorgung über Board-USB. Nur spannungsfreie, von anderen Geräten getrennte Kabel anschließen.</text>
+  <text x="40" y="943" class="small">Prüfkabel verbindet Buchse A mit B gemäß Profil. Reale Steckerkontakte am Aufbau beschriften und prüfen.</text>
+</svg>

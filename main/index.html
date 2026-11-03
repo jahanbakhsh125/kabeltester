@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kabeltester</title>
+  <style>
+    :root {
+      font-family:Arial,sans-serif;
+      color:#17324d;
+      background:#f4f7fa;
+      color-scheme:light;
+    }
+    body {
+      margin:0;
+      padding:24px;
+    }
+    main {
+      max-width:1080px;
+      margin:auto;
+    }
+    h1 {
+      margin:0 0 8px;
+    }
+    h2 {
+      font-size:21px;
+      margin:0 0 18px;
+    }
+    p {
+      line-height:1.5;
+    }
+    .kopf {
+      margin:16px 0 24px;
+    }
+    .raster {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+    }
+    section {
+      background:white;
+      padding:24px;
+      border-radius:12px;
+      margin-bottom:20px;
+    }
+    label {
+      display:block;
+      font-weight:bold;
+      margin:16px 0 7px;
+    }
+    input,select,textarea,button {
+      font:inherit;
+      box-sizing:border-box;
+    }
+    input,select,textarea {
+      width:100%;
+      padding:10px;
+      border:1px solid #b9c6d2;
+      border-radius:6px;
+    }
+    textarea {
+      min-height:80px;
+      resize:vertical;
+    }
+    fieldset {
+      border:0;
+      margin:0;
+      padding:0;
+      min-width:0;
+    }
+    button {
+      padding:11px 16px;
+      border:0;
+      border-radius:6px;
+      background:#1761a6;
+      color:white;
+      cursor:pointer;
+      margin-top:16px;
+    }
+    button:disabled {
+      opacity:.45;
+      cursor:default;
+    }
+    .abbrechen {
+      background:#a52b35;
+    }
+    .hilfe {
+      font-size:14px;
+      color:#506477;
+      margin:6px 0 0;
+    }
+    .status {
+      font-size:19px;
+      font-weight:bold;
+    }
+    .gut {
+      color:#167344;
+    }
+    .fehler {
+      color:#a52b35;
+    }
+    .neutral {
+      color:#506477;
+    }
+    progress {
+      width:100%;
+      height:20px;
+    }
+    .tabelle {
+      overflow-x:auto;
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+      text-align:left;
+    }
+    th,td {
+      padding:12px 9px;
+      border-bottom:1px solid #e1e8ef;
+      vertical-align:top;
+    }
+    th {
+      white-space:nowrap;
+    }
+    td.daten {
+      font-family:monospace;
+      overflow-wrap:anywhere;
+      min-width:150px;
+    }
+    td.zusatzdaten {
+      white-space:pre-wrap;
+      min-width:280px;
+    }
+    #meldung {
+      min-height:24px;
+    }
+    #auftragsdaten {
+      overflow-wrap:anywhere;
+      font-family:monospace;
+      font-size:14px;
+    }
+    @media(max-width:760px) {
+      body {
+        padding:14px;
+      }
+      .raster {
+        grid-template-columns:1fr;
+        gap:0;
+      }
+      section {
+        padding:20px;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <!-- Verbindung und Hinweise zum Starten einer Messung -->
+  <header class="kopf">
+    <h1>Kabeltester</h1>
+    <p>Auftrag anlegen, Kabel anschließen und den externen Schalter betätigen.
+      Vor jedem weiteren Test das Kabel abziehen und warten, bis die Ergebnis-LED nicht mehr dauerhaft leuchtet.</p>
+    <p class="hilfe">Nach dem Abziehen blinkt Grün bei aktivem Auftrag. Ohne Auftrag blitzt Grün kurz alle 3 Sekunden.</p>
+    <p id="verbindung" class="hilfe" role="status">Verbindung wird geprüft …</p>
+  </header>
+  <div class="raster">
+    <section>
+      <!-- Eingaben fuer Profil, Anzahl und optionale Zusatzdaten -->
+      <h2>Neuer Auftrag</h2>
+      <form id="auftrag-form">
+        <fieldset id="eingaben" disabled>
+          <label for="vorlage">Standardprofil</label>
+          <select id="vorlage"><option value="">Eigenes Profil</option></select>
+          <label for="profil">Verbindungen A0 bis A7</label>
+          <input id="profil" value="0,1,2,3,4,5,6,7" required autocomplete="off">
+          <p class="hilfe">Acht Werte: B-Anschluss 0–7 oder −1 für keine Verbindung.</p>
+          <label for="anzahl">Anzahl der Kabel</label>
+          <input id="anzahl" type="number" min="1" max="4294967295" step="1" value="3" required>
+          <label for="args">Zusatzdaten (optional)</label>
+          <textarea id="args" spellcheck="false">{"charge":"A17"}</textarea>
+          <p class="hilfe">JSON-Objekt, beispielsweise eine Chargennummer. Leer lassen ist erlaubt.</p>
+        </fieldset>
+        <button id="anlegen" type="submit" disabled>Auftrag anlegen</button>
+      </form>
+      <p id="meldung" role="status" aria-live="polite"></p>
+    </section>
+    <section>
+      <!-- Fortschritt, Abbruch und Ergebnis des letzten Laufs -->
+      <h2>Aktueller Auftrag</h2>
+      <p id="auftrag-status" class="status">Status wird geladen …</p>
+      <progress id="fortschritt" max="1" value="0" aria-label="Auftragsfortschritt"></progress>
+      <p id="auftragsdaten"></p>
+      <button id="abbrechen" class="abbrechen" type="button" disabled>Auftrag abbrechen</button>
+      <h2 style="margin-top:28px">Letzte Messung</h2>
+      <p id="ergebnis" class="status" role="status">Noch kein Test</p>
+      <p id="empfaenger" role="status">Meldeempfänger noch nicht geprüft</p>
+    </section>
+  </div>
+  <section>
+    <!-- Gespeicherte Laeufe mit Meldestatus und zugehoerigen Auftragsdaten -->
+    <h2>Letzte 20 Tests</h2>
+    <p class="hilfe">Neueste zuerst. Ergebnisse bleiben bis zum Neustart gespeichert.
+      „Nicht gemeldet“ bedeutet, dass die Meldung noch nicht erfolgreich angenommen wurde.</p>
+    <div class="tabelle">
+      <table>
+        <thead><tr><th>Auftrag</th><th>Lauf</th><th>Ergebnis</th><th>Meldung</th><th>Profil</th><th>Gemessenes Profil</th><th>Zusatzdaten</th></tr></thead>
+        <tbody id="laeufe"><tr><td colspan="7">Ergebnisse werden geladen …</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script>
+// ---- Elemente und aktueller Seitenzustand ----
+// Diese Werte halten die Anzeige synchron und sperren unpassende Aktionen.
+const feld = id => document.getElementById(id);
+let standardprofile = [];
+let aktuellerAuftrag = null;
+let verbunden = false;
+let aktionLaeuft = false;
+let version = 0;
+
+// Sendet eine Anfrage an den ESP und liest die JSON-Antwort.
+// Serverfehler und Zeitueberschreitungen werden an den Aufrufer weitergegeben.
+async function api(pfad, methode = 'GET', daten) {
+  const optionen = {method: methode, cache: 'no-store', signal: AbortSignal.timeout(4000)};
+  if (daten !== undefined) {
+    optionen.headers = {'Content-Type': 'application/json'};
+    optionen.body = JSON.stringify(daten);
+  }
+  const antwort = await fetch(pfad, optionen);
+  let inhalt;
+  try { inhalt = await antwort.json(); }
+  catch { throw new Error('Ungültige Antwort vom ESP.'); }
+  if (!antwort.ok) throw new Error(inhalt.message || inhalt.error || ('HTTP ' + antwort.status));
+  return inhalt;
+}
+
+// Erlaubt neue Auftraege nur ohne aktiven Auftrag und bei erreichbarem ESP.
+function bedienungAktualisieren() {
+  feld('eingaben').disabled = !verbunden || aktionLaeuft || aktuellerAuftrag !== null;
+  feld('anlegen').disabled = !verbunden || aktionLaeuft || aktuellerAuftrag !== null;
+  feld('abbrechen').disabled = !verbunden || aktionLaeuft || aktuellerAuftrag === null;
+}
+
+// Zeigt eine Rueckmeldung unter dem Formular an.
+function meldung(text, fehler = false) {
+  feld('meldung').textContent = text;
+  feld('meldung').className = fehler ? 'fehler' : 'gut';
+}
+
+// ---- Ergebnisse und Status anzeigen ----
+// Zusatzdaten einschliesslich des vom Tester ergaenzten Messprofils anzeigen.
+function zusatzdatenText(lauf) {
+  return JSON.stringify(lauf.args);
+}
+
+// Die API liefert die aeltesten Laeufe zuerst; die Tabelle zeigt die neuesten zuerst.
+function laeufeAnzeigen(runs) {
+  const tabelle = feld('laeufe');
+  tabelle.replaceChildren();
+  if (runs.length === 0) {
+    const zeile = document.createElement('tr');
+    const zelle = document.createElement('td');
+    zelle.colSpan = 7;
+    zelle.textContent = 'Noch keine Messungen gespeichert.';
+    zeile.appendChild(zelle);
+    tabelle.appendChild(zeile);
+    return;
+  }
+  for (const lauf of [...runs].reverse()) {
+    const zeile = document.createElement('tr');
+    const werte = [lauf.job_id, lauf.lauf, lauf.result,
+      lauf.gemeldet ? 'Gemeldet' : 'Nicht gemeldet',
+      lauf.profile.join(', '),
+      Array.isArray(lauf.measured_profile) ? JSON.stringify(lauf.measured_profile) : '—',
+      zusatzdatenText(lauf)];
+    werte.forEach((wert, index) => {
+      const zelle = document.createElement('td');
+      // Auftragsdaten als Text anzeigen, nicht als HTML ausführen.
+      zelle.textContent = String(wert);
+      if (index === 2) zelle.className = lauf.result === 'OK' ? 'gut' : 'fehler';
+      if (index >= 4) zelle.className = 'daten';
+      if (index === 6) zelle.className += ' zusatzdaten';
+      zeile.appendChild(zelle);
+    });
+    tabelle.appendChild(zeile);
+  }
+}
+
+// Liest Auftrag, letztes Ergebnis und Laufliste zusammen.
+// Die Versionsnummer verhindert, dass eine alte Abfrage eine neue Aktion ueberschreibt.
+async function aktualisieren() {
+  const gelesen = version;
+  try {
+    const [zustand, ergebnis, liste] = await Promise.all([
+      api('/api/jobs/current'), api('/api/result'), api('/api/runs')
+    ]);
+    if (gelesen !== version) return;
+    verbunden = true;
+    aktuellerAuftrag = zustand.job;
+    feld('verbindung').textContent = 'Mit dem Kabeltester verbunden · Anzeige aktualisiert sich automatisch';
+    feld('auftrag-status').textContent = aktuellerAuftrag
+      ? 'Auftrag ' + aktuellerAuftrag.job_id + ': ' + aktuellerAuftrag.completed + ' von ' + aktuellerAuftrag.count + ' geprüft'
+      : 'Kein Auftrag aktiv';
+    feld('fortschritt').max = aktuellerAuftrag ? aktuellerAuftrag.count : 1;
+    feld('fortschritt').value = aktuellerAuftrag ? aktuellerAuftrag.completed : 0;
+    feld('auftragsdaten').textContent = aktuellerAuftrag
+      ? 'Profil: ' + aktuellerAuftrag.profile.join(', ') + ' · Zusatzdaten: ' + JSON.stringify(aktuellerAuftrag.args) : '';
+    feld('ergebnis').textContent = ergebnis.result;
+    feld('ergebnis').className = 'status ' + (ergebnis.result === 'OK' ? 'gut' : ergebnis.result === 'FEHLER' ? 'fehler' : 'neutral');
+    const texte = {unknown: 'Meldeempfänger noch nicht geprüft', reachable: 'Meldeempfänger erreichbar',
+      unreachable: 'Meldeempfänger nicht erreichbar', error: 'Meldeempfänger hat die Meldung nicht angenommen'};
+    feld('empfaenger').textContent = texte[zustand.receiver_status] || texte.unknown;
+    feld('empfaenger').className = ['unreachable', 'error'].includes(zustand.receiver_status) ? 'fehler' : 'neutral';
+    laeufeAnzeigen(liste.runs);
+  } catch (fehler) {
+    if (gelesen !== version) return;
+    verbunden = false;
+    feld('verbindung').textContent = 'ESP nicht erreichbar – Verbindung wird erneut geprüft.';
+  }
+  bedienungAktualisieren();
+}
+
+// ---- Auftrag anlegen oder abbrechen ----
+// Sperrt die Bedienung waehrend der Anfrage und fragt danach den echten ESP-Status ab.
+async function aktion(methode, pfad, daten) {
+  if (aktionLaeuft) return;
+  aktionLaeuft = true;
+  version++;
+  bedienungAktualisieren();
+  meldung('Anfrage wird gesendet …');
+  try {
+    const antwort = await api(pfad, methode, daten);
+    meldung(methode === 'POST' ? 'Auftrag ' + antwort.job_id + ' angelegt. Jetzt Kabel anschließen und Schalter betätigen.'
+      : 'Auftrag ' + antwort.job_id + ' abgebrochen.');
+  } catch (fehler) {
+    meldung('Anfrage fehlgeschlagen: ' + fehler.message + ' Der aktuelle Status wird neu abgefragt.', true);
+  } finally {
+    aktionLaeuft = false;
+    version++;
+    await aktualisieren();
+  }
+}
+
+// Uebernimmt die acht Verbindungen aus dem ausgewaehlten Standardprofil.
+feld('vorlage').addEventListener('change', () => {
+  const index = feld('vorlage').value;
+  if (index !== '') feld('profil').value = standardprofile[Number(index)].profile.join(',');
+});
+feld('profil').addEventListener('input', () => { feld('vorlage').value = ''; });
+// Prueft Profil, Anzahl und Zusatzdaten, bevor ein neuer Auftrag gesendet wird.
+feld('auftrag-form').addEventListener('submit', async ereignis => {
+  ereignis.preventDefault();
+  if (!verbunden || aktionLaeuft || aktuellerAuftrag !== null) return;
+  if (!feld('auftrag-form').reportValidity()) return;
+  try {
+    const teile = feld('profil').value.split(',').map(wert => wert.trim());
+    const profil = teile.map(Number);
+    if (teile.length !== 8 || teile.some(wert => wert === '') ||
+        profil.some(wert => !Number.isInteger(wert) || wert < -1 || wert > 7)) {
+      throw new Error('Profil: genau acht ganze Zahlen zwischen −1 und 7 eingeben.');
+    }
+    const anzahl = Number(feld('anzahl').value);
+    if (!Number.isInteger(anzahl) || anzahl < 1 || anzahl > 4294967295) throw new Error('Eine gültige Anzahl eingeben.');
+    const text = feld('args').value.trim();
+    const args = text === '' ? {} : JSON.parse(text);
+    if (args === null || Array.isArray(args) || typeof args !== 'object') throw new Error('Zusatzdaten müssen ein JSON-Objekt sein.');
+    const daten = {profile: profil, count: anzahl, args};
+    if (new TextEncoder().encode(JSON.stringify(daten)).length > 2048) throw new Error('Auftrag zu groß: Zusatzdaten kürzen.');
+    await aktion('POST', '/api/jobs', daten);
+  } catch (fehler) { meldung(fehler.message, true); }
+});
+// Bricht nur einen derzeit aktiven Auftrag ab.
+feld('abbrechen').addEventListener('click', async () => {
+  if (verbunden && aktuellerAuftrag !== null) await aktion('DELETE', '/api/jobs/current');
+});
+
+// ---- Seite starten und regelmaessig aktualisieren ----
+// Wartet nach jeder Abfrage eine Sekunde, damit sich Poll-Abfragen nicht ueberlappen.
+async function poll() {
+  if (!aktionLaeuft) await aktualisieren();
+  setTimeout(poll, 1000);
+}
+
+// Laedt zuerst die Standardprofile und startet danach die Statusabfragen.
+async function starten() {
+  try {
+    const daten = await api('/api/profiles');
+    standardprofile = daten.profiles;
+    standardprofile.forEach((profil, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = profil.name;
+      feld('vorlage').appendChild(option);
+    });
+    if (standardprofile.length > 0) {
+      feld('vorlage').value = '0';
+      feld('profil').value = standardprofile[0].profile.join(',');
+    }
+  } catch (fehler) { meldung('Standardprofile konnten nicht geladen werden. Eigenes Profil ist weiterhin möglich.', true); }
+  await poll();
+}
+starten();
+</script>
+</body>
+</html>
